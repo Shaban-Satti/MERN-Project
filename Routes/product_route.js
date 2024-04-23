@@ -1,6 +1,13 @@
 const express=require('express')
 const router= express.Router()
+const createError=require('http-errors')
+
+
+
 const Product=require('../Models/Product_Model')
+const { default: mongoose } = require('mongoose')
+
+
 router.get('/', async (req,res,next)=>{
    //next(new Error("cannot get lits"))
     try{
@@ -26,6 +33,12 @@ router.post('/',async (req,res,next)=>{
     }
     catch(error){
         console.log(error.message)
+        if(error.name==='ValidationError')
+        {
+            next(createError(422,error.message))
+            return
+        }
+        next(error)
 
     }
 
@@ -54,14 +67,25 @@ router.get('/:id',async(req,res,next)=>{
  const product=await Product.findById(id)
 //another method
 //const product=await Product.findOne({_id:id})
+if(!product)
+{
+  throw createError(404,'Product does not exist')
+}
 res.send(product);
     }
     catch(error)
 {
     console.log(error.message)
+    if(error instanceof mongoose.CastError){
+next(createError(400,'Invalid Product id'))
+return;
+    }
+    next(error)
 }
 
 })
+
+//updating route
 
 router.patch('/:id',async(req,res,next)=>{
     const id=req.params.id;
@@ -71,23 +95,50 @@ router.patch('/:id',async(req,res,next)=>{
         const result=await Product.findByIdAndUpdate(
             id,update,option
         )
+
+        if(!result)
+{
+  throw createError(404,'Product does not exist')
+}
         res.send(result);
     }
     catch(error)
     {
         console.log(error.message)
+      
+        if(error instanceof mongoose.CastError){
+            next(createError(400,'Invalid Product id'))
+            return;
+                }
+                next(error)
+
+        
     }
     
 })
+
+
+//for deleting route 
+
 router.delete('/:id',async(req,res,next)=>{
     // res.send('deleting a single product')
     const id=req.params.id;
     try{
     const result=await Product.findByIdAndDelete(id)
-    res.send(result);  
-}catch(error){
-        console.log(error.message)
+    if(!product)
+    {
+        throw createError(404,'Product does not exist')
     }
-    
+    res.send(result);  
+        }
+        catch(error)
+    {
+        console.log(error.message)
+        if(error instanceof mongoose.CastError){
+    next(createError(400,'Invalid Product id'))
+    return;
+        }
+        next(error)
+    }
 })
 module.exports=router;
