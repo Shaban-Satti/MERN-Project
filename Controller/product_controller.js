@@ -13,7 +13,6 @@ getAllProduct:async (req,res,next)=>{
     //next(new Error("cannot get lits"))
      try{
    //for query thing ....
- 
       const result=await Product.find({},{__v:0})
      // const result=await Product.find({},{name:1,_id:0})
     
@@ -125,10 +124,10 @@ deleteProductById:async(req,res,next)=>{
     const id=req.params.id;
     try{
     const result=await Product.findByIdAndDelete(id)
-    if(!result)
-    {
-        throw createError(404,'Product does not exist')
-    }
+    // if(!result)
+    // {
+    //     throw createError(404,'Product does not exist')
+    // }
     res.send(result);  
         }
         catch(error)
